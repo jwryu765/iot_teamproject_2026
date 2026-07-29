@@ -1,0 +1,342 @@
+@page "/"
+@implements IDisposable
+@using GuideRobot.WebHmi.Services
+@inject RobotCommandService RobotCommand
+
+<PageTitle>GuideRobot | 안내 로봇</PageTitle>
+
+<div class="guide-page">
+    <section class="hero-card">
+        <div>
+            <p class="eyebrow">GUIDEROBOT</p>
+            <h1>@(IsGuiding ? "로봇이 안내 중입니다" : "어디로 안내할까요?")</h1>
+            <p class="hero-description">
+                @(IsGuiding
+                    ? $"{SelectedDestination!.Name}까지 안전하게 안내하고 있어요."
+                    : "GuideRobot이 길을 안내해 드립니다.")
+            </p>
+        </div>
+        <div class="robot-badge" aria-hidden="true">
+            <img src="robot-mark.svg" alt="" />
+        </div>
+    </section>
+
+    @if (IsGuiding)
+    {
+        <section class="journey-card" aria-live="polite">
+            <div class="journey-heading">
+                <div>
+                    <p class="section-label">안내 진행 상황</p>
+                    <h2>@SelectedDestination!.Name</h2>
+                </div>
+                <strong class="progress-number">@Progress%</strong>
+            </div>
+
+            <div class="journey-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Progress" aria-label="목적지까지 안내 진행률">
+                <span class="track-start">출발</span>
+                <div class="route-line">
+                    <div class="route-progress" style="width: @Progress%;"></div>
+                    <div class="robot-traveler" style="left: @Progress%;">
+                        <span class="robot-motion" aria-hidden="true">⌁</span>
+                        <img src="robot-mark.svg" alt="" />
+                    </div>
+                </div>
+                <span class="track-destination">@SelectedDestination!.Name</span>
+            </div>
+
+            <div class="journey-message">
+                <span class="pulse-dot" aria-hidden="true"></span>
+                <p>@JourneyMessage</p>
+            </div>
+
+            <button class="secondary-button" disabled="@IsControlSending" @onclick="HandleSecondaryActionAsync">
+                @(Progress >= 100 ? "새 안내 시작" : "안내 취소")
+            </button>
+
+            @if (ControlError is not null)
+            {
+                <p class="command-result failure">@ControlError</p>
+            }
+        </section>
+    }
+    else
+    {
+        <section class="status-card disconnected">
+            <div class="status-icon" aria-hidden="true">●</div>
+            <div>
+                <p class="section-label">로봇 상태</p>
+                <h2>연결 상태를 확인해 주세요.</h2>
+                <p>서버와 기계의 연결 상태를 확인해 주세요.</p>
+            </div>
+        </section>
+
+        <section class="destination-section" aria-labelledby="destination-title">
+            <div class="section-heading">
+                <div>
+                    <p class="section-label">목적지 선택</p>
+                    <h2 id="destination-title">어디로 가시겠어요?</h2>
+                </div>
+                @if (SelectedDestination is not null)
+                {
+                    <span class="selected-destination">선택: @SelectedDestination.Name</span>
+                }
+            </div>
+
+            <div class="destination-grid">
+                @foreach (var destination in Destinations)
+                {
+                    <button class="destination-button @(SelectedDestination == destination ? "selected" : "")"
+                            aria-pressed="@(SelectedDestination == destination)"
+                            @onclick="() => SelectDestination(destination)">
+                        <span class="destination-pin" aria-hidden="true">@destination.Icon</span>
+                        <span>@destination.Name</span>
+                    </button>
+                }
+            </div>
+        </section>
+
+        <button class="start-button" disabled="@(SelectedDestination is null || IsSendingCommand)" @onclick="OpenGuidanceConfirmation">
+            <span aria-hidden="true">→</span>
+            안내 시작
+        </button>
+
+        @if (CommandResult is not null)
+        {
+            <p class="command-result @(CommandResult.IsSuccess ? "success" : "failure")">@CommandResult.Message</p>
+        }
+    }
+</div>
+
+@if (IsGuidanceConfirmationOpen && SelectedDestination is not null)
+{
+    <div class="confirmation-backdrop" @onclick="CloseGuidanceConfirmation">
+        <section class="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="guidance-confirmation-title" @onclick:stopPropagation="true">
+            <div class="confirmation-icon" aria-hidden="true">@SelectedDestination.Icon</div>
+            <p class="section-label">안내 시작 확인</p>
+            <h2 id="guidance-confirmation-title"><strong>@SelectedDestination.Name</strong><br />안내를 시작할까요?</h2>
+            <div class="confirmation-actions">
+                <button class="confirmation-cancel" @onclick="CloseGuidanceConfirmation">취소</button>
+                <button class="confirmation-start" disabled="@IsSendingCommand" @onclick="StartGuidanceAsync">
+                    @(IsSendingCommand ? "서버에 전달 중..." : "안내 시작")
+                </button>
+            </div>
+        </section>
+    </div>
+}
+
+@if (IsCancelConfirmationOpen)
+{
+    <div class="confirmation-backdrop" @onclick="ResumeGuidanceAsync">
+        <section class="confirmation-dialog confirmation-dialog--cancel" role="dialog" aria-modal="true" aria-labelledby="cancel-confirmation-title" @onclick:stopPropagation="true">
+            <div class="confirmation-icon confirmation-icon--cancel" aria-hidden="true">×</div>
+            <p class="section-label">안내 취소 확인</p>
+            <h2 id="cancel-confirmation-title">안내를 취소할까요?</h2>
+            <p>현재 안내가 중단됩니다.</p>
+            @if (ControlError is not null)
+            {
+                <p class="command-result failure">@ControlError</p>
+            }
+            <div class="confirmation-actions">
+                <button class="confirmation-cancel" disabled="@IsControlSending" @onclick="ResumeGuidanceAsync">계속 안내</button>
+                <button class="confirmation-danger" disabled="@IsControlSending" @onclick="CancelGuidanceAsync">
+                    안내 취소
+                </button>
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    private readonly Destination[] Destinations =
+    [
+        new("room_301", "강의실 301호", "🏫"),
+        new("room_302", "강의실 302호", "🏫"),
+        new("room_303", "행정실 303호", "📋"),
+        new("room_304", "강사대기실 304호", "☕"),
+        new("room_305", "강사실 305호", "💼")
+    ];
+    private Timer? journeyTimer;
+
+    private Destination? SelectedDestination { get; set; }
+    private int Progress { get; set; }
+    private bool IsGuiding { get; set; }
+    private bool IsSendingCommand { get; set; }
+    private bool IsGuidanceConfirmationOpen { get; set; }
+    private bool IsCancelConfirmationOpen { get; set; }
+    private bool IsJourneyPaused { get; set; }
+    private bool IsControlSending { get; set; }
+    private CommandResult? CommandResult { get; set; }
+    private string? ControlError { get; set; }
+
+    // TODO(실제 연동): 테스트 타이머 대신 서버의 상태/진행률 API 또는 WebSocket 값을 사용합니다.
+    // 연결이 끊기면 진행률·로봇 애니메이션을 멈추고 "서버와의 접속을 확인해 주세요."를 표시해야 합니다.
+    private string JourneyMessage => Progress switch
+    {
+        >= 100 => "목적지에 도착했습니다. 즐거운 하루 되세요!",
+        >= 70 => "목적지가 가까워지고 있습니다.",
+        >= 35 => "안전하게 이동하고 있습니다.",
+        _ => "안내를 시작했습니다. 로봇을 따라와 주세요."
+    };
+
+    private void SelectDestination(Destination destination) => SelectedDestination = destination;
+
+    private void OpenGuidanceConfirmation()
+    {
+        if (SelectedDestination is not null && !IsSendingCommand)
+        {
+            IsGuidanceConfirmationOpen = true;
+        }
+    }
+
+    private void CloseGuidanceConfirmation() => IsGuidanceConfirmationOpen = false;
+
+    private async Task HandleSecondaryActionAsync()
+    {
+        if (IsControlSending)
+        {
+            return;
+        }
+
+        if (Progress >= 100)
+        {
+            ResetGuidanceUi();
+            return;
+        }
+
+        IsControlSending = true;
+        ControlError = null;
+        var result = await RobotCommand.PauseGuidanceAsync();
+        IsControlSending = false;
+
+        if (!result.IsSuccess)
+        {
+            ControlError = result.Message;
+            return;
+        }
+
+        IsJourneyPaused = true;
+        journeyTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        IsCancelConfirmationOpen = true;
+    }
+
+    private async Task ResumeGuidanceAsync()
+    {
+        if (IsControlSending)
+        {
+            return;
+        }
+
+        IsControlSending = true;
+        ControlError = null;
+        var result = await RobotCommand.ResumeGuidanceAsync();
+        IsControlSending = false;
+
+        if (!result.IsSuccess)
+        {
+            ControlError = result.Message;
+            return;
+        }
+
+        IsCancelConfirmationOpen = false;
+        IsJourneyPaused = false;
+
+        if (IsGuiding && Progress < 100)
+        {
+            if (journeyTimer is null)
+            {
+                StartJourneyTimer();
+            }
+            else
+            {
+                journeyTimer.Change(TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(500));
+            }
+        }
+    }
+
+    private async Task StartGuidanceAsync()
+    {
+        if (SelectedDestination is null)
+        {
+            return;
+        }
+
+        IsGuidanceConfirmationOpen = false;
+        IsSendingCommand = true;
+        CommandResult = await RobotCommand.SendDestinationAsync(SelectedDestination.Id);
+        IsSendingCommand = false;
+
+        if (!CommandResult.IsSuccess)
+        {
+            return;
+        }
+
+        IsGuiding = true;
+        Progress = 0;
+        IsJourneyPaused = false;
+        ControlError = null;
+        StartJourneyTimer();
+    }
+
+    private void StartJourneyTimer()
+    {
+        journeyTimer?.Dispose();
+        journeyTimer = new Timer(_ => InvokeAsync(AdvanceJourney), null, TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(500));
+    }
+
+    private void AdvanceJourney()
+    {
+        // TODO(실제 연동): 서버가 제공하는 진행률로 화면을 갱신하면 이 테스트용 증가 로직은 제거합니다.
+        if (IsJourneyPaused)
+        {
+            return;
+        }
+
+        if (Progress >= 100)
+        {
+            journeyTimer?.Dispose();
+            return;
+        }
+
+        Progress = Math.Min(Progress + 2, 100);
+        StateHasChanged();
+    }
+
+    private async Task CancelGuidanceAsync()
+    {
+        if (IsControlSending)
+        {
+            return;
+        }
+
+        IsControlSending = true;
+        ControlError = null;
+        var result = await RobotCommand.CancelGuidanceAsync();
+        IsControlSending = false;
+
+        if (!result.IsSuccess)
+        {
+            ControlError = result.Message;
+            return;
+        }
+
+        ResetGuidanceUi();
+    }
+
+    private void ResetGuidanceUi()
+    {
+        journeyTimer?.Dispose();
+        journeyTimer = null;
+        IsGuiding = false;
+        Progress = 0;
+        IsJourneyPaused = false;
+        SelectedDestination = null;
+        IsGuidanceConfirmationOpen = false;
+        IsCancelConfirmationOpen = false;
+        CommandResult = null;
+        ControlError = null;
+    }
+
+    public void Dispose() => journeyTimer?.Dispose();
+
+    private sealed record Destination(string Id, string Name, string Icon);
+}

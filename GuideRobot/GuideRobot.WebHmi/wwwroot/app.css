@@ -1,0 +1,955 @@
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #006bb7;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+h1:focus {
+    outline: none;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+:root {
+    --navy: #12355b;
+    --blue: #1f558b;
+    --mint: #7ee6c4;
+    --ink: #172b43;
+    --muted: #66758a;
+    --paper: #f5f8fc;
+    --line: #dce6f0;
+}
+
+body {
+    background: var(--paper);
+    color: var(--ink);
+}
+
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 72px;
+    padding: 12px clamp(20px, 5vw, 72px);
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--navy);
+    font-size: 1.18rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+}
+
+.brand img {
+    width: 36px;
+    height: 36px;
+}
+
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #3c5a52;
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+.connection-status span,
+.pulse-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #27b47e;
+    box-shadow: 0 0 0 5px rgba(39, 180, 126, .12);
+}
+
+.connection-status.disconnected {
+    color: #a12b3a;
+}
+
+.connection-status.disconnected span {
+    background: #df4151;
+    box-shadow: 0 0 0 5px rgba(223, 65, 81, .12);
+}
+
+.status-card.disconnected .status-icon {
+    color: #df4151;
+    background: #fff0f2;
+}
+
+.guide-page {
+    width: min(100% - 40px, 920px);
+    margin: 0 auto;
+    padding: 44px 0 64px;
+}
+
+.hero-card,
+.journey-card,
+.status-card,
+.destination-section {
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 16px 50px rgba(34, 67, 108, .08);
+}
+
+.hero-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: clamp(28px, 5vw, 48px);
+    margin-bottom: 20px;
+    color: #fff;
+    background: linear-gradient(125deg, #12355b, #1f558b);
+    border: 0;
+    overflow: hidden;
+}
+
+.eyebrow,
+.section-label {
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.hero-card .eyebrow {
+    color: var(--mint);
+}
+
+.hero-card h1,
+.journey-heading h2,
+.status-card h2,
+.section-heading h2 {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.hero-card h1 {
+    font-size: clamp(2rem, 5vw, 3.15rem);
+}
+
+.hero-description {
+    max-width: 520px;
+    margin: 12px 0 0;
+    color: #dcecff;
+    font-size: 1.05rem;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.robot-badge {
+    flex: 0 0 auto;
+    display: grid;
+    width: clamp(86px, 15vw, 130px);
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .12);
+    animation: robot-float 2.4s ease-in-out infinite;
+}
+
+.robot-badge img {
+    width: 72%;
+}
+
+.status-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 26px;
+    margin-bottom: 20px;
+}
+
+.status-card h2 {
+    font-size: 1.3rem;
+}
+
+.status-card p:not(.section-label) {
+    margin: 5px 0 0;
+    color: var(--muted);
+}
+
+.status-icon {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border-radius: 14px;
+    color: #21a974;
+    background: #e0faef;
+}
+
+.destination-section,
+.journey-card {
+    padding: clamp(24px, 5vw, 42px);
+}
+
+.section-heading,
+.journey-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.selected-destination {
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: var(--blue);
+    background: #e8f3ff;
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.destination-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.destination-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 74px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    color: var(--ink);
+    background: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: left;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.destination-button:hover,
+.destination-button:focus-visible {
+    border-color: #80add9;
+    background: #f4f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(29, 85, 139, .12);
+}
+
+.destination-button.selected {
+    border-color: var(--blue);
+    color: #0e3f70;
+    background: #e8f3ff;
+    box-shadow: inset 0 0 0 1px var(--blue);
+}
+
+.destination-pin {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 10px;
+    color: var(--blue);
+    background: #e8f3ff;
+    font-size: 1.2rem;
+}
+
+.start-button,
+.secondary-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 66px;
+    margin-top: 20px;
+    border: 0;
+    border-radius: 16px;
+    color: #fff;
+    background: var(--navy);
+    font-size: 1.1rem;
+    font-weight: 800;
+    transition: transform .18s ease, background .18s ease;
+}
+
+.start-button:hover:not(:disabled),
+.secondary-button:hover {
+    background: #0b2949;
+    transform: translateY(-2px);
+}
+
+.start-button:disabled {
+    cursor: not-allowed;
+    opacity: .4;
+}
+
+.command-result {
+    margin: 14px 0 0;
+    padding: 13px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.command-result.success {
+    color: #176345;
+    background: #e2faef;
+}
+
+.command-result.failure {
+    color: #a12b3a;
+    background: #fff0f2;
+}
+
+.journey-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-number {
+    color: var(--blue);
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    letter-spacing: -0.06em;
+}
+
+.journey-track {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    /* 로봇이 양 끝에 있어도 출발·도착 글자와 겹치지 않을 만큼 간격을 둡니다. */
+    gap: 34px;
+    min-height: 120px;
+    padding: 22px 0;
+}
+
+.track-start,
+.track-destination {
+    color: var(--muted);
+    font-size: .84rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.route-line {
+    position: relative;
+    height: 10px;
+    border-radius: 999px;
+    background: #e5edf5;
+}
+
+.route-progress {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2cba85, #79e4c1);
+    transition: width .45s ease;
+}
+
+.robot-traveler {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    width: 44px;
+    height: 54px;
+    place-items: center;
+    transform: translate(-50%, -50%);
+    transition: left .45s ease;
+}
+
+.robot-traveler img {
+    position: relative;
+    z-index: 2;
+    width: 38px;
+    filter: drop-shadow(0 8px 8px rgba(18, 53, 91, .22));
+    animation: robot-walk .55s ease-in-out infinite alternate;
+}
+
+.robot-motion {
+    position: absolute;
+    z-index: 0;
+    left: -7px;
+    color: #55c9a6;
+    font-size: 28px;
+    font-weight: 800;
+    transform: rotate(-20deg);
+    animation: motion-lines .5s linear infinite;
+}
+
+.journey-message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    color: #3e5c75;
+    background: #f1f7fc;
+}
+
+.journey-message p {
+    margin: 0;
+    font-weight: 700;
+}
+
+.pulse-dot {
+    flex: 0 0 auto;
+    animation: pulse 1.4s ease-out infinite;
+}
+
+.secondary-button {
+    margin-top: 18px;
+    color: #b32939;
+    background: #fff0f2;
+}
+
+.secondary-button:hover {
+    background: #ffe1e6;
+}
+
+.confirmation-backdrop {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(9, 29, 52, .58);
+}
+
+.confirmation-dialog {
+    width: min(100%, 440px);
+    padding: 30px;
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 24px;
+    color: var(--ink);
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(8, 28, 50, .28);
+}
+
+.confirmation-icon {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 14px;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--blue);
+    background: #e8f3ff;
+    font-size: 1.45rem;
+}
+
+.confirmation-dialog h2 {
+    margin: 0;
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    line-height: 1.25;
+    letter-spacing: -.04em;
+}
+
+.confirmation-dialog h2 strong {
+    color: var(--blue);
+}
+
+.confirmation-dialog > p:not(.section-label) {
+    margin: 10px 0 0;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.confirmation-dialog--cancel .section-label {
+    color: #b32939;
+}
+
+.confirmation-icon--cancel {
+    color: #b32939;
+    background: #fff0f2;
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.confirmation-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.confirmation-cancel,
+.confirmation-start {
+    min-height: 52px;
+    border: 0;
+    border-radius: 13px;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.confirmation-cancel {
+    color: var(--ink);
+    background: #edf3f8;
+}
+
+.confirmation-start {
+    color: #fff;
+    background: var(--navy);
+}
+
+.confirmation-danger {
+    min-height: 52px;
+    border: 0;
+    border-radius: 13px;
+    color: #fff;
+    background: #b32939;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.confirmation-start:disabled {
+    opacity: .55;
+}
+
+.confirmation-cancel:hover,
+.confirmation-start:hover:not(:disabled),
+.confirmation-danger:hover {
+    transform: translateY(-1px);
+}
+
+@keyframes robot-float {
+    50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes robot-walk {
+    from { transform: translateY(2px) rotate(2deg); }
+    to { transform: translateY(-3px) rotate(-2deg); }
+}
+
+@keyframes motion-lines {
+    to { transform: translateX(-8px) rotate(-20deg); opacity: 0; }
+}
+
+@keyframes pulse {
+    70% { box-shadow: 0 0 0 11px rgba(39, 180, 126, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(39, 180, 126, 0); }
+}
+
+@media (max-width: 620px) {
+    .content {
+        padding: 0;
+    }
+
+    .app-topbar {
+        min-height: 56px;
+        padding: 8px 14px;
+    }
+
+    .brand {
+        gap: 8px;
+        font-size: 1rem;
+    }
+
+    .brand img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .connection-status {
+        font-size: .75rem;
+    }
+
+    .guide-page {
+        width: min(100% - 24px, 620px);
+        padding: 14px 0 28px;
+    }
+
+    .hero-card {
+        align-items: flex-start;
+        gap: 14px;
+        padding: 18px;
+        margin-bottom: 12px;
+        border-radius: 18px;
+    }
+
+    .hero-card h1 {
+        font-size: clamp(1.45rem, 7vw, 1.9rem);
+    }
+
+    .hero-description {
+        margin-top: 8px;
+        font-size: .92rem;
+        line-height: 1.45;
+    }
+
+    .robot-badge {
+        width: 56px;
+    }
+
+    .status-card {
+        gap: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        border-radius: 18px;
+    }
+
+    .status-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+    }
+
+    .status-card h2 {
+        font-size: 1.1rem;
+    }
+
+    .status-card p:not(.section-label) {
+        font-size: .86rem;
+    }
+
+    .status-card .section-label {
+        display: none;
+    }
+
+    .destination-section,
+    .journey-card {
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .section-heading {
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .section-heading h2,
+    .journey-heading h2 {
+        font-size: 1.3rem;
+    }
+
+    .selected-destination {
+        padding: 6px 10px;
+        font-size: .78rem;
+    }
+
+    .destination-grid {
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+
+    .destination-button {
+        min-height: 52px;
+        padding: 9px 12px;
+        border-radius: 13px;
+        font-size: .94rem;
+    }
+
+    .destination-pin {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .start-button,
+    .secondary-button {
+        min-height: 52px;
+        margin-top: 12px;
+        border-radius: 13px;
+        font-size: 1rem;
+    }
+
+    .journey-track {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding-inline: 24px;
+    }
+
+    .track-destination {
+        text-align: right;
+    }
+
+    .journey-message {
+        padding: 12px;
+        font-size: .9rem;
+    }
+
+    .confirmation-backdrop {
+        padding: 16px;
+    }
+
+    .confirmation-dialog {
+        padding: 24px;
+        border-radius: 20px;
+    }
+
+    .confirmation-actions {
+        margin-top: 20px;
+    }
+
+    .confirmation-cancel,
+    .confirmation-start,
+    .confirmation-danger {
+        min-height: 50px;
+        font-size: .92rem;
+    }
+}
+
+/* 세로가 낮은 휴대폰: 터치 크기는 유지하면서 첫 화면의 스크롤을 최소화합니다. */
+@media (max-width: 620px) and (max-height: 700px) {
+    .guide-page {
+        padding: 8px 0 18px;
+    }
+
+    .hero-card {
+        gap: 12px;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+    }
+
+    .hero-card .eyebrow {
+        display: none;
+    }
+
+    .hero-description {
+        margin-top: 5px;
+        font-size: .82rem;
+    }
+
+    .robot-badge {
+        width: 48px;
+    }
+
+    .status-card {
+        padding: 10px 14px;
+        margin-bottom: 8px;
+    }
+
+    .status-card p:not(.section-label) {
+        margin-top: 2px;
+        font-size: .8rem;
+    }
+
+    .destination-section,
+    .journey-card {
+        padding: 14px;
+    }
+
+    .section-heading {
+        margin-bottom: 10px;
+    }
+
+    .destination-button {
+        min-height: 50px;
+    }
+
+    .start-button,
+    .secondary-button {
+        min-height: 50px;
+        margin-top: 10px;
+    }
+}
+
+/* 로봇 부착 디스플레이(가로 1024px, 세로 600px 등)를 위한 압축 레이아웃 */
+@media (min-width: 621px) and (max-height: 700px) {
+    .content {
+        padding: 0;
+    }
+
+    .app-topbar {
+        min-height: 56px;
+        padding: 8px clamp(20px, 4vw, 44px);
+    }
+
+    .brand {
+        font-size: 1.05rem;
+    }
+
+    .brand img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .guide-page {
+        width: min(100% - 48px, 920px);
+        padding: 8px 0;
+    }
+
+    .hero-card {
+        gap: 18px;
+        padding: 12px 20px;
+        margin-bottom: 8px;
+        border-radius: 16px;
+    }
+
+    .hero-card h1 {
+        font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+    }
+
+    .hero-description {
+        margin-top: 4px;
+        font-size: .85rem;
+    }
+
+    .robot-badge {
+        width: 56px;
+    }
+
+    .status-card {
+        gap: 10px;
+        padding: 8px 14px;
+        margin-bottom: 8px;
+        border-radius: 14px;
+    }
+
+    .status-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+    }
+
+    .status-card h2 {
+        font-size: 1rem;
+    }
+
+    .status-card p:not(.section-label) {
+        margin-top: 2px;
+        font-size: .8rem;
+    }
+
+    .status-card .section-label,
+    .destination-section .section-label {
+        display: none;
+    }
+
+    .destination-section,
+    .journey-card {
+        padding: 12px 16px;
+        border-radius: 16px;
+    }
+
+    .section-heading,
+    .journey-heading {
+        margin-bottom: 8px;
+    }
+
+    .section-heading h2,
+    .journey-heading h2 {
+        font-size: 1.15rem;
+    }
+
+    .destination-grid {
+        gap: 6px 8px;
+    }
+
+    .destination-button {
+        min-height: 48px;
+        padding: 7px 10px;
+        border-radius: 11px;
+        font-size: .86rem;
+    }
+
+    .destination-pin {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        font-size: .9rem;
+    }
+
+    .start-button,
+    .secondary-button {
+        min-height: 48px;
+        margin-top: 8px;
+        border-radius: 11px;
+        font-size: .95rem;
+    }
+
+    .command-result {
+        margin-top: 8px;
+        padding: 9px 12px;
+        font-size: .85rem;
+    }
+
+    .journey-track {
+        min-height: 74px;
+        padding: 10px 0;
+    }
+
+    .robot-traveler {
+        width: 44px;
+        height: 50px;
+    }
+
+    .robot-traveler img {
+        width: 34px;
+    }
+
+    .journey-message {
+        padding: 10px 12px;
+        font-size: .85rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .connection-status {
+        display: none;
+    }
+
+    .hero-card {
+        padding: 18px;
+    }
+}
