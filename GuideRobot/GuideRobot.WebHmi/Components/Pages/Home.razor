@@ -124,28 +124,6 @@
     </div>
 }
 
-@if (IsCancelConfirmationOpen)
-{
-    <div class="confirmation-backdrop" @onclick="ResumeGuidanceAsync">
-        <section class="confirmation-dialog confirmation-dialog--cancel" role="dialog" aria-modal="true" aria-labelledby="cancel-confirmation-title" @onclick:stopPropagation="true">
-            <div class="confirmation-icon confirmation-icon--cancel" aria-hidden="true">×</div>
-            <p class="section-label">안내 취소 확인</p>
-            <h2 id="cancel-confirmation-title">안내를 취소할까요?</h2>
-            <p>현재 안내가 중단됩니다.</p>
-            @if (ControlError is not null)
-            {
-                <p class="command-result failure">@ControlError</p>
-            }
-            <div class="confirmation-actions">
-                <button class="confirmation-cancel" disabled="@IsControlSending" @onclick="ResumeGuidanceAsync">계속 안내</button>
-                <button class="confirmation-danger" disabled="@IsControlSending" @onclick="CancelGuidanceAsync">
-                    안내 취소
-                </button>
-            </div>
-        </section>
-    </div>
-}
-
 @code {
     private readonly Destination[] Destinations =
     [
@@ -162,8 +140,6 @@
     private bool IsGuiding { get; set; }
     private bool IsSendingCommand { get; set; }
     private bool IsGuidanceConfirmationOpen { get; set; }
-    private bool IsCancelConfirmationOpen { get; set; }
-    private bool IsJourneyPaused { get; set; }
     private bool IsControlSending { get; set; }
     private CommandResult? CommandResult { get; set; }
     private string? ControlError { get; set; }
@@ -203,54 +179,7 @@
             return;
         }
 
-        IsControlSending = true;
-        ControlError = null;
-        var result = await RobotCommand.PauseGuidanceAsync();
-        IsControlSending = false;
-
-        if (!result.IsSuccess)
-        {
-            ControlError = result.Message;
-            return;
-        }
-
-        IsJourneyPaused = true;
-        journeyTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-        IsCancelConfirmationOpen = true;
-    }
-
-    private async Task ResumeGuidanceAsync()
-    {
-        if (IsControlSending)
-        {
-            return;
-        }
-
-        IsControlSending = true;
-        ControlError = null;
-        var result = await RobotCommand.ResumeGuidanceAsync();
-        IsControlSending = false;
-
-        if (!result.IsSuccess)
-        {
-            ControlError = result.Message;
-            return;
-        }
-
-        IsCancelConfirmationOpen = false;
-        IsJourneyPaused = false;
-
-        if (IsGuiding && Progress < 100)
-        {
-            if (journeyTimer is null)
-            {
-                StartJourneyTimer();
-            }
-            else
-            {
-                journeyTimer.Change(TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(500));
-            }
-        }
+        await CancelGuidanceAsync();
     }
 
     private async Task StartGuidanceAsync()
@@ -272,7 +201,6 @@
 
         IsGuiding = true;
         Progress = 0;
-        IsJourneyPaused = false;
         ControlError = null;
         StartJourneyTimer();
     }
@@ -286,11 +214,6 @@
     private void AdvanceJourney()
     {
         // TODO(실제 연동): 서버가 제공하는 진행률로 화면을 갱신하면 이 테스트용 증가 로직은 제거합니다.
-        if (IsJourneyPaused)
-        {
-            return;
-        }
-
         if (Progress >= 100)
         {
             journeyTimer?.Dispose();
@@ -328,10 +251,8 @@
         journeyTimer = null;
         IsGuiding = false;
         Progress = 0;
-        IsJourneyPaused = false;
         SelectedDestination = null;
         IsGuidanceConfirmationOpen = false;
-        IsCancelConfirmationOpen = false;
         CommandResult = null;
         ControlError = null;
     }

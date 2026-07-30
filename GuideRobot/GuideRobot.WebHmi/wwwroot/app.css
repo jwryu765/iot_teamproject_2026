@@ -514,17 +514,6 @@ body {
     line-height: 1.45;
 }
 
-.confirmation-dialog--cancel .section-label {
-    color: #b32939;
-}
-
-.confirmation-icon--cancel {
-    color: #b32939;
-    background: #fff0f2;
-    font-size: 2rem;
-    font-weight: 800;
-}
-
 .confirmation-actions {
     display: grid;
     grid-template-columns: 1fr 1.25fr;
@@ -551,23 +540,12 @@ body {
     background: var(--navy);
 }
 
-.confirmation-danger {
-    min-height: 52px;
-    border: 0;
-    border-radius: 13px;
-    color: #fff;
-    background: #b32939;
-    font-weight: 800;
-    font-size: 1rem;
-}
-
 .confirmation-start:disabled {
     opacity: .55;
 }
 
 .confirmation-cancel:hover,
-.confirmation-start:hover:not(:disabled),
-.confirmation-danger:hover {
+.confirmation-start:hover:not(:disabled) {
     transform: translateY(-1px);
 }
 
@@ -742,8 +720,7 @@ body {
     }
 
     .confirmation-cancel,
-    .confirmation-start,
-    .confirmation-danger {
+    .confirmation-start {
         min-height: 50px;
         font-size: .92rem;
     }

@@ -28,12 +28,6 @@ public sealed class RobotCommandService(HttpClient httpClient)
         }
     }
 
-    public Task<CommandResult> PauseGuidanceAsync(CancellationToken cancellationToken = default) =>
-        SendControlCommandAsync("pause", "일시정지", cancellationToken);
-
-    public Task<CommandResult> ResumeGuidanceAsync(CancellationToken cancellationToken = default) =>
-        SendControlCommandAsync("resume", "안내 재개", cancellationToken);
-
     public Task<CommandResult> CancelGuidanceAsync(CancellationToken cancellationToken = default) =>
         SendControlCommandAsync("cancel", "안내 취소", cancellationToken);
 
