@@ -9,9 +9,11 @@
     <section class="hero-card">
         <div>
             <p class="eyebrow">GUIDEROBOT</p>
-            <h1>@(IsGuiding ? "로봇이 안내 중입니다" : "어디로 안내할까요?")</h1>
+            <h1>@(HasArrived ? "목적지에 도착했습니다" : IsGuiding ? "로봇이 안내 중입니다" : "어디로 안내할까요?")</h1>
             <p class="hero-description">
-                @(IsGuiding
+                @(HasArrived
+                    ? $"{SelectedDestination!.Name}에 안전하게 도착했어요."
+                    : IsGuiding
                     ? $"{SelectedDestination!.Name}까지 안전하게 안내하고 있어요."
                     : "GuideRobot이 길을 안내해 드립니다.")
             </p>
@@ -26,32 +28,32 @@
         <section class="journey-card" aria-live="polite">
             <div class="journey-heading">
                 <div>
-                    <p class="section-label">안내 진행 상황</p>
+                    <p class="section-label">@(HasArrived ? "안내 완료" : "안내 진행 상황")</p>
                     <h2>@SelectedDestination!.Name</h2>
                 </div>
-                <strong class="guidance-state">안내 중</strong>
+                <strong class="guidance-state @(HasArrived ? "arrived" : "")">@(HasArrived ? "도착 완료" : "안내 중")</strong>
             </div>
 
-            <div class="journey-track" role="img" aria-label="@SelectedDestination.Name 목적지로 안내 중">
-                <span class="track-start">출발</span>
-                <div class="route-line">
-                    <div class="route-flow" aria-hidden="true"></div>
-                    <div class="robot-traveler" aria-hidden="true">
-                        <span class="robot-motion" aria-hidden="true">⌁</span>
-                        <img src="robot-mark.svg" alt="" />
-                    </div>
-                </div>
-                <span class="track-destination">@SelectedDestination!.Name</span>
+            <div class="journey-message @(HasArrived ? "arrived" : "")">
+                @if (!HasArrived)
+                {
+                    <span class="pulse-dot" aria-hidden="true"></span>
+                }
+                <p>@(HasArrived ? "목적지에 도착했습니다." : "안내 중입니다. 로봇을 따라와 주세요.")</p>
             </div>
 
-            <div class="journey-message">
-                <span class="pulse-dot" aria-hidden="true"></span>
-                <p>안내 중입니다. 로봇을 따라와 주세요.</p>
-            </div>
-
-            <button class="secondary-button" disabled="@(IsManualMode || IsControlSending)" @onclick="HandleSecondaryActionAsync">
-                @(IsControlSending ? "취소 요청 중..." : "안내 취소")
-            </button>
+            @if (HasArrived)
+            {
+                <button class="secondary-button arrival-confirm-button" disabled="@IsManualMode" @onclick="AcknowledgeArrival">
+                    확인
+                </button>
+            }
+            else
+            {
+                <button class="secondary-button" disabled="@(IsManualMode || IsControlSending)" @onclick="HandleSecondaryActionAsync">
+                    @(IsControlSending ? "취소 요청 중..." : "안내 취소")
+                </button>
+            }
 
             @if (ControlError is not null)
             {
@@ -152,13 +154,14 @@
     private bool IsGuidanceConfirmationOpen { get; set; }
     private bool IsControlSending { get; set; }
     private bool IsManualMode { get; set; }
+    private bool HasArrived { get; set; }
     private CommandResult? CommandResult { get; set; }
     private string? ControlError { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshManualModeAsync(statusPollingCancellation.Token);
-        _ = PollManualModeAsync(statusPollingCancellation.Token);
+        await RefreshStatusAsync(statusPollingCancellation.Token);
+        _ = PollStatusAsync(statusPollingCancellation.Token);
     }
 
     private void SelectDestination(Destination destination)
@@ -213,6 +216,7 @@
         }
 
         IsGuiding = true;
+        HasArrived = false;
         ControlError = null;
     }
 
@@ -240,13 +244,22 @@
     private void ResetGuidanceUi()
     {
         IsGuiding = false;
+        HasArrived = false;
         SelectedDestination = null;
         IsGuidanceConfirmationOpen = false;
         CommandResult = null;
         ControlError = null;
     }
 
-    private async Task PollManualModeAsync(CancellationToken cancellationToken)
+    private void AcknowledgeArrival()
+    {
+        if (!IsManualMode)
+        {
+            ResetGuidanceUi();
+        }
+    }
+
+    private async Task PollStatusAsync(CancellationToken cancellationToken)
     {
         statusPollingTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
@@ -254,7 +267,7 @@
         {
             while (await statusPollingTimer.WaitForNextTickAsync(cancellationToken))
             {
-                await RefreshManualModeAsync(cancellationToken);
+                await RefreshStatusAsync(cancellationToken);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -262,23 +275,42 @@
         }
     }
 
-    private async Task RefreshManualModeAsync(CancellationToken cancellationToken)
+    private async Task RefreshStatusAsync(CancellationToken cancellationToken)
     {
         var status = await RobotCommand.GetStatusAsync(cancellationToken);
 
-        if (!status.IsSuccess || status.ManualMode == IsManualMode)
+        if (!status.IsSuccess)
         {
             return;
         }
 
-        IsManualMode = status.ManualMode;
+        var hasStateChanged = false;
 
-        if (IsManualMode)
+        if (status.ManualMode != IsManualMode)
         {
-            IsGuidanceConfirmationOpen = false;
+            IsManualMode = status.ManualMode;
+            hasStateChanged = true;
+
+            if (IsManualMode)
+            {
+                IsGuidanceConfirmationOpen = false;
+            }
         }
 
-        await InvokeAsync(StateHasChanged);
+        if (IsGuiding
+            && !HasArrived
+            && string.Equals(status.NavigationStatus, "arrived", StringComparison.OrdinalIgnoreCase))
+        {
+            HasArrived = true;
+            IsControlSending = false;
+            ControlError = null;
+            hasStateChanged = true;
+        }
+
+        if (hasStateChanged)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     public void Dispose()

@@ -43,6 +43,23 @@ GET /api/status
 
 Qt 관리자 화면이 서버의 `manual_mode`를 변경하는 API는 관리자 화면과 C++ 서버 사이에서 정하면 됩니다. 웹 HMI는 `GET /api/status`의 최종 상태만 사용합니다.
 
+## 목적지 도착 상태 연동
+
+웹 HMI는 같은 `GET /api/status` 응답의 `status` 필드도 확인합니다.
+
+```json
+{
+  "status": "arrived",
+  "manual_mode": false
+}
+```
+
+- 안내 명령 접수: `status: "moving"`
+- 로봇의 실제 도착·정지 확인: `status: "arrived"`
+- 안내 취소 또는 대기: `status: "idle"`
+
+안내 중 `arrived`가 반환되면 웹 화면에 “목적지에 도착했습니다”가 표시됩니다.
+
 ## 기존 명령 API
 
 목적지 안내:

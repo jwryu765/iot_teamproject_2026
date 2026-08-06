@@ -14,17 +14,17 @@ public sealed class RobotCommandService(HttpClient httpClient)
 
             if (!response.IsSuccessStatusCode)
             {
-                return new RobotStatusResult(false, false);
+                return new RobotStatusResult(false, false, null);
             }
 
             var status = await response.Content.ReadFromJsonAsync<RobotStatusResponse>(cancellationToken);
             return status is null
-                ? new RobotStatusResult(false, false)
-                : new RobotStatusResult(true, status.ManualMode);
+                ? new RobotStatusResult(false, false, null)
+                : new RobotStatusResult(true, status.ManualMode, status.Status);
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
-            return new RobotStatusResult(false, false);
+            return new RobotStatusResult(false, false, null);
         }
     }
 
@@ -86,12 +86,15 @@ public sealed class RobotCommandService(HttpClient httpClient)
             : "서버가 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
-public sealed record RobotStatusResult(bool IsSuccess, bool ManualMode);
+public sealed record RobotStatusResult(bool IsSuccess, bool ManualMode, string? NavigationStatus);
 
 public sealed record CommandResult(bool IsSuccess, HttpStatusCode? StatusCode, string Message);
 
 file sealed class RobotStatusResponse
 {
+    [JsonPropertyName("status")]
+    public string? Status { get; init; }
+
     [JsonPropertyName("manual_mode")]
     public bool ManualMode { get; init; }
 }

@@ -325,69 +325,9 @@ body {
     letter-spacing: -.02em;
 }
 
-.journey-track {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    /* 로봇이 양 끝에 있어도 출발·도착 글자와 겹치지 않을 만큼 간격을 둡니다. */
-    gap: 34px;
-    min-height: 120px;
-    padding: 22px 0;
-}
-
-.track-start,
-.track-destination {
-    color: var(--muted);
-    font-size: .84rem;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.route-line {
-    position: relative;
-    height: 10px;
-    border-radius: 999px;
-    background: #e5edf5;
-}
-
-.route-flow {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #d9e7f2 0%, #2cba85 45%, #79e4c1 55%, #d9e7f2 100%);
-    background-size: 220% 100%;
-    animation: route-flow 2.2s linear infinite;
-}
-
-.robot-traveler {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    display: grid;
-    width: 44px;
-    height: 54px;
-    place-items: center;
-    transform: translate(-50%, -50%);
-    animation: journey-travel 4.8s ease-in-out infinite;
-}
-
-.robot-traveler img {
-    position: relative;
-    z-index: 2;
-    width: 38px;
-    filter: drop-shadow(0 8px 8px rgba(18, 53, 91, .22));
-    animation: robot-walk .55s ease-in-out infinite alternate;
-}
-
-.robot-motion {
-    position: absolute;
-    z-index: 0;
-    left: -7px;
-    color: #55c9a6;
-    font-size: 28px;
-    font-weight: 800;
-    transform: rotate(-20deg);
-    animation: motion-lines .5s linear infinite;
+.guidance-state.arrived {
+    color: #176345;
+    background: #e2faef;
 }
 
 .journey-message {
@@ -405,6 +345,11 @@ body {
     font-weight: 700;
 }
 
+.journey-message.arrived {
+    color: #176345;
+    background: #eafaf2;
+}
+
 .pulse-dot {
     flex: 0 0 auto;
     animation: pulse 1.4s ease-out infinite;
@@ -418,6 +363,15 @@ body {
 
 .secondary-button:hover {
     background: #ffe1e6;
+}
+
+.arrival-confirm-button {
+    color: #ffffff;
+    background: var(--blue);
+}
+
+.arrival-confirm-button:hover {
+    background: var(--navy);
 }
 
 .secondary-button:disabled {
@@ -584,24 +538,6 @@ body {
     50% { transform: translateY(-8px) rotate(2deg); }
 }
 
-@keyframes robot-walk {
-    from { transform: translateY(2px) rotate(2deg); }
-    to { transform: translateY(-3px) rotate(-2deg); }
-}
-
-@keyframes route-flow {
-    to { background-position: -220% 0; }
-}
-
-@keyframes journey-travel {
-    0%, 8% { left: 0; }
-    92%, 100% { left: 100%; }
-}
-
-@keyframes motion-lines {
-    to { transform: translateX(-8px) rotate(-20deg); opacity: 0; }
-}
-
 @keyframes pulse {
     70% { box-shadow: 0 0 0 11px rgba(39, 180, 126, 0); }
     100% { box-shadow: 0 0 0 0 rgba(39, 180, 126, 0); }
@@ -728,16 +664,6 @@ body {
         margin-top: 12px;
         border-radius: 13px;
         font-size: 1rem;
-    }
-
-    .journey-track {
-        grid-template-columns: 1fr;
-        gap: 8px;
-        padding-inline: 24px;
-    }
-
-    .track-destination {
-        text-align: right;
     }
 
     .journey-message {
@@ -905,20 +831,6 @@ body {
         margin-top: 8px;
         padding: 9px 12px;
         font-size: .85rem;
-    }
-
-    .journey-track {
-        min-height: 74px;
-        padding: 10px 0;
-    }
-
-    .robot-traveler {
-        width: 44px;
-        height: 50px;
-    }
-
-    .robot-traveler img {
-        width: 34px;
     }
 
     .journey-message {
