@@ -1,10 +1,33 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace GuideRobot.WebHmi.Services;
 
 public sealed class RobotCommandService(HttpClient httpClient)
 {
+    public async Task<RobotStatusResult> GetStatusAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var response = await httpClient.GetAsync("api/status", cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new RobotStatusResult(false, false);
+            }
+
+            var status = await response.Content.ReadFromJsonAsync<RobotStatusResponse>(cancellationToken);
+            return status is null
+                ? new RobotStatusResult(false, false)
+                : new RobotStatusResult(true, status.ManualMode);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            return new RobotStatusResult(false, false);
+        }
+    }
+
     public async Task<CommandResult> SendDestinationAsync(string destinationId, CancellationToken cancellationToken = default)
     {
         try
@@ -63,4 +86,12 @@ public sealed class RobotCommandService(HttpClient httpClient)
             : "서버가 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
+public sealed record RobotStatusResult(bool IsSuccess, bool ManualMode);
+
 public sealed record CommandResult(bool IsSuccess, HttpStatusCode? StatusCode, string Message);
+
+file sealed class RobotStatusResponse
+{
+    [JsonPropertyName("manual_mode")]
+    public bool ManualMode { get; init; }
+}

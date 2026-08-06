@@ -104,16 +104,6 @@ body {
     height: 36px;
 }
 
-.connection-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    color: #3c5a52;
-    font-size: .9rem;
-    font-weight: 700;
-}
-
-.connection-status span,
 .pulse-dot {
     display: inline-block;
     width: 9px;
@@ -121,20 +111,6 @@ body {
     border-radius: 50%;
     background: #27b47e;
     box-shadow: 0 0 0 5px rgba(39, 180, 126, .12);
-}
-
-.connection-status.disconnected {
-    color: #a12b3a;
-}
-
-.connection-status.disconnected span {
-    background: #df4151;
-    box-shadow: 0 0 0 5px rgba(223, 65, 81, .12);
-}
-
-.status-card.disconnected .status-icon {
-    color: #df4151;
-    background: #fff0f2;
 }
 
 .guide-page {
@@ -145,7 +121,6 @@ body {
 
 .hero-card,
 .journey-card,
-.status-card,
 .destination-section {
     border: 1px solid var(--line);
     border-radius: 24px;
@@ -182,7 +157,6 @@ body {
 
 .hero-card h1,
 .journey-heading h2,
-.status-card h2,
 .section-heading h2 {
     margin: 0;
     font-weight: 800;
@@ -215,33 +189,6 @@ body {
 
 .robot-badge img {
     width: 72%;
-}
-
-.status-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 22px 26px;
-    margin-bottom: 20px;
-}
-
-.status-card h2 {
-    font-size: 1.3rem;
-}
-
-.status-card p:not(.section-label) {
-    margin: 5px 0 0;
-    color: var(--muted);
-}
-
-.status-icon {
-    display: grid;
-    width: 46px;
-    height: 46px;
-    place-items: center;
-    border-radius: 14px;
-    color: #21a974;
-    background: #e0faef;
 }
 
 .destination-section,
@@ -366,10 +313,16 @@ body {
     overflow: hidden;
 }
 
-.progress-number {
+.guidance-state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 7px 13px;
+    border-radius: 999px;
     color: var(--blue);
-    font-size: clamp(1.8rem, 5vw, 2.8rem);
-    letter-spacing: -0.06em;
+    background: #e8f3ff;
+    font-size: .9rem;
+    letter-spacing: -.02em;
 }
 
 .journey-track {
@@ -397,23 +350,25 @@ body {
     background: #e5edf5;
 }
 
-.route-progress {
+.route-flow {
     position: absolute;
-    inset: 0 auto 0 0;
+    inset: 0;
     border-radius: inherit;
-    background: linear-gradient(90deg, #2cba85, #79e4c1);
-    transition: width .45s ease;
+    background: linear-gradient(90deg, #d9e7f2 0%, #2cba85 45%, #79e4c1 55%, #d9e7f2 100%);
+    background-size: 220% 100%;
+    animation: route-flow 2.2s linear infinite;
 }
 
 .robot-traveler {
     position: absolute;
     top: 50%;
+    left: 0;
     display: grid;
     width: 44px;
     height: 54px;
     place-items: center;
     transform: translate(-50%, -50%);
-    transition: left .45s ease;
+    animation: journey-travel 4.8s ease-in-out infinite;
 }
 
 .robot-traveler img {
@@ -463,6 +418,11 @@ body {
 
 .secondary-button:hover {
     background: #ffe1e6;
+}
+
+.secondary-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
 }
 
 .confirmation-backdrop {
@@ -549,6 +509,77 @@ body {
     transform: translateY(-1px);
 }
 
+.manual-control-overlay {
+    position: fixed;
+    z-index: 2000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 50% 34%, rgba(126, 230, 196, .2), transparent 28%),
+        linear-gradient(145deg, #eef6ff, #f9fbfe 60%, #edf8f5);
+}
+
+.manual-control-dialog {
+    width: min(100%, 560px);
+    padding: clamp(34px, 7vw, 58px);
+    border: 1px solid rgba(31, 85, 139, .14);
+    border-radius: 30px;
+    text-align: center;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 28px 90px rgba(18, 53, 91, .18);
+}
+
+.manual-control-icon {
+    display: grid;
+    width: 112px;
+    height: 112px;
+    margin: 0 auto 24px;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #dcecff, #e4faf3);
+    box-shadow: 0 14px 34px rgba(31, 85, 139, .14);
+}
+
+.manual-control-icon img {
+    width: 74px;
+    height: 74px;
+}
+
+.manual-control-dialog .section-label {
+    color: var(--blue);
+}
+
+.manual-control-dialog h2 {
+    margin: 8px 0 0;
+    color: var(--navy);
+    font-size: clamp(1.8rem, 6vw, 2.7rem);
+    letter-spacing: -.05em;
+    word-break: keep-all;
+}
+
+.manual-control-dialog > p:not(.section-label) {
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+
+.manual-control-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    color: #28755e;
+    background: #e7f8f2;
+    font-size: .92rem;
+    font-weight: 800;
+}
+
 @keyframes robot-float {
     50% { transform: translateY(-8px) rotate(2deg); }
 }
@@ -556,6 +587,15 @@ body {
 @keyframes robot-walk {
     from { transform: translateY(2px) rotate(2deg); }
     to { transform: translateY(-3px) rotate(-2deg); }
+}
+
+@keyframes route-flow {
+    to { background-position: -220% 0; }
+}
+
+@keyframes journey-travel {
+    0%, 8% { left: 0; }
+    92%, 100% { left: 100%; }
 }
 
 @keyframes motion-lines {
@@ -587,8 +627,32 @@ body {
         height: 30px;
     }
 
-    .connection-status {
-        font-size: .75rem;
+    .manual-control-overlay {
+        padding: 16px;
+    }
+
+    .manual-control-dialog {
+        padding: 32px 20px;
+        border-radius: 24px;
+    }
+
+    .manual-control-icon {
+        width: 88px;
+        height: 88px;
+        margin-bottom: 20px;
+    }
+
+    .manual-control-icon img {
+        width: 58px;
+        height: 58px;
+    }
+
+    .manual-control-dialog > p:not(.section-label) {
+        font-size: .95rem;
+    }
+
+    .manual-control-status {
+        margin-top: 24px;
     }
 
     .guide-page {
@@ -616,31 +680,6 @@ body {
 
     .robot-badge {
         width: 56px;
-    }
-
-    .status-card {
-        gap: 12px;
-        padding: 14px 16px;
-        margin-bottom: 12px;
-        border-radius: 18px;
-    }
-
-    .status-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 11px;
-    }
-
-    .status-card h2 {
-        font-size: 1.1rem;
-    }
-
-    .status-card p:not(.section-label) {
-        font-size: .86rem;
-    }
-
-    .status-card .section-label {
-        display: none;
     }
 
     .destination-section,
@@ -751,16 +790,6 @@ body {
         width: 48px;
     }
 
-    .status-card {
-        padding: 10px 14px;
-        margin-bottom: 8px;
-    }
-
-    .status-card p:not(.section-label) {
-        margin-top: 2px;
-        font-size: .8rem;
-    }
-
     .destination-section,
     .journey-card {
         padding: 14px;
@@ -826,29 +855,6 @@ body {
         width: 56px;
     }
 
-    .status-card {
-        gap: 10px;
-        padding: 8px 14px;
-        margin-bottom: 8px;
-        border-radius: 14px;
-    }
-
-    .status-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 9px;
-    }
-
-    .status-card h2 {
-        font-size: 1rem;
-    }
-
-    .status-card p:not(.section-label) {
-        margin-top: 2px;
-        font-size: .8rem;
-    }
-
-    .status-card .section-label,
     .destination-section .section-label {
         display: none;
     }
@@ -922,10 +928,6 @@ body {
 }
 
 @media (max-width: 380px) {
-    .connection-status {
-        display: none;
-    }
-
     .hero-card {
         padding: 18px;
     }

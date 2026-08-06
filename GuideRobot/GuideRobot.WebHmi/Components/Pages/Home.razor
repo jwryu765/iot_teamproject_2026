@@ -29,14 +29,14 @@
                     <p class="section-label">안내 진행 상황</p>
                     <h2>@SelectedDestination!.Name</h2>
                 </div>
-                <strong class="progress-number">@Progress%</strong>
+                <strong class="guidance-state">안내 중</strong>
             </div>
 
-            <div class="journey-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Progress" aria-label="목적지까지 안내 진행률">
+            <div class="journey-track" role="img" aria-label="@SelectedDestination.Name 목적지로 안내 중">
                 <span class="track-start">출발</span>
                 <div class="route-line">
-                    <div class="route-progress" style="width: @Progress%;"></div>
-                    <div class="robot-traveler" style="left: @Progress%;">
+                    <div class="route-flow" aria-hidden="true"></div>
+                    <div class="robot-traveler" aria-hidden="true">
                         <span class="robot-motion" aria-hidden="true">⌁</span>
                         <img src="robot-mark.svg" alt="" />
                     </div>
@@ -46,11 +46,11 @@
 
             <div class="journey-message">
                 <span class="pulse-dot" aria-hidden="true"></span>
-                <p>@JourneyMessage</p>
+                <p>안내 중입니다. 로봇을 따라와 주세요.</p>
             </div>
 
-            <button class="secondary-button" disabled="@IsControlSending" @onclick="HandleSecondaryActionAsync">
-                @(Progress >= 100 ? "새 안내 시작" : "안내 취소")
+            <button class="secondary-button" disabled="@(IsManualMode || IsControlSending)" @onclick="HandleSecondaryActionAsync">
+                @(IsControlSending ? "취소 요청 중..." : "안내 취소")
             </button>
 
             @if (ControlError is not null)
@@ -61,15 +61,6 @@
     }
     else
     {
-        <section class="status-card disconnected">
-            <div class="status-icon" aria-hidden="true">●</div>
-            <div>
-                <p class="section-label">로봇 상태</p>
-                <h2>연결 상태를 확인해 주세요.</h2>
-                <p>서버와 기계의 연결 상태를 확인해 주세요.</p>
-            </div>
-        </section>
-
         <section class="destination-section" aria-labelledby="destination-title">
             <div class="section-heading">
                 <div>
@@ -86,6 +77,7 @@
                 @foreach (var destination in Destinations)
                 {
                     <button class="destination-button @(SelectedDestination == destination ? "selected" : "")"
+                            disabled="@IsManualMode"
                             aria-pressed="@(SelectedDestination == destination)"
                             @onclick="() => SelectDestination(destination)">
                         <span class="destination-pin" aria-hidden="true">@destination.Icon</span>
@@ -95,7 +87,7 @@
             </div>
         </section>
 
-        <button class="start-button" disabled="@(SelectedDestination is null || IsSendingCommand)" @onclick="OpenGuidanceConfirmation">
+        <button class="start-button" disabled="@(IsManualMode || SelectedDestination is null || IsSendingCommand)" @onclick="OpenGuidanceConfirmation">
             <span aria-hidden="true">→</span>
             안내 시작
         </button>
@@ -115,10 +107,28 @@
             <p class="section-label">안내 시작 확인</p>
             <h2 id="guidance-confirmation-title"><strong>@SelectedDestination.Name</strong><br />안내를 시작할까요?</h2>
             <div class="confirmation-actions">
-                <button class="confirmation-cancel" @onclick="CloseGuidanceConfirmation">취소</button>
-                <button class="confirmation-start" disabled="@IsSendingCommand" @onclick="StartGuidanceAsync">
+                <button class="confirmation-cancel" disabled="@IsManualMode" @onclick="CloseGuidanceConfirmation">취소</button>
+                <button class="confirmation-start" disabled="@(IsManualMode || IsSendingCommand)" @onclick="StartGuidanceAsync">
                     @(IsSendingCommand ? "서버에 전달 중..." : "안내 시작")
                 </button>
+            </div>
+        </section>
+    </div>
+}
+
+@if (IsManualMode)
+{
+    <div class="manual-control-overlay" role="dialog" aria-modal="true" aria-labelledby="manual-control-title" aria-describedby="manual-control-description">
+        <section class="manual-control-dialog">
+            <div class="manual-control-icon" aria-hidden="true">
+                <img src="robot-mark.svg" alt="" />
+            </div>
+            <p class="section-label">MANUAL CONTROL</p>
+            <h2 id="manual-control-title">관리자가 제어 중입니다</h2>
+            <p id="manual-control-description">수동 제어가 끝날 때까지 잠시 기다려 주세요.</p>
+            <div class="manual-control-status">
+                <span class="pulse-dot" aria-hidden="true"></span>
+                관리자 제어 연결됨
             </div>
         </section>
     </div>
@@ -133,49 +143,52 @@
         new("room_304", "강사대기실 304호", "☕"),
         new("room_305", "강사실 305호", "💼")
     ];
-    private Timer? journeyTimer;
+    private readonly CancellationTokenSource statusPollingCancellation = new();
+    private PeriodicTimer? statusPollingTimer;
 
     private Destination? SelectedDestination { get; set; }
-    private int Progress { get; set; }
     private bool IsGuiding { get; set; }
     private bool IsSendingCommand { get; set; }
     private bool IsGuidanceConfirmationOpen { get; set; }
     private bool IsControlSending { get; set; }
+    private bool IsManualMode { get; set; }
     private CommandResult? CommandResult { get; set; }
     private string? ControlError { get; set; }
 
-    // TODO(실제 연동): 테스트 타이머 대신 서버의 상태/진행률 API 또는 WebSocket 값을 사용합니다.
-    // 연결이 끊기면 진행률·로봇 애니메이션을 멈추고 "서버와의 접속을 확인해 주세요."를 표시해야 합니다.
-    private string JourneyMessage => Progress switch
+    protected override async Task OnInitializedAsync()
     {
-        >= 100 => "목적지에 도착했습니다. 즐거운 하루 되세요!",
-        >= 70 => "목적지가 가까워지고 있습니다.",
-        >= 35 => "안전하게 이동하고 있습니다.",
-        _ => "안내를 시작했습니다. 로봇을 따라와 주세요."
-    };
+        await RefreshManualModeAsync(statusPollingCancellation.Token);
+        _ = PollManualModeAsync(statusPollingCancellation.Token);
+    }
 
-    private void SelectDestination(Destination destination) => SelectedDestination = destination;
+    private void SelectDestination(Destination destination)
+    {
+        if (!IsManualMode)
+        {
+            SelectedDestination = destination;
+        }
+    }
 
     private void OpenGuidanceConfirmation()
     {
-        if (SelectedDestination is not null && !IsSendingCommand)
+        if (!IsManualMode && SelectedDestination is not null && !IsSendingCommand)
         {
             IsGuidanceConfirmationOpen = true;
         }
     }
 
-    private void CloseGuidanceConfirmation() => IsGuidanceConfirmationOpen = false;
+    private void CloseGuidanceConfirmation()
+    {
+        if (!IsManualMode)
+        {
+            IsGuidanceConfirmationOpen = false;
+        }
+    }
 
     private async Task HandleSecondaryActionAsync()
     {
-        if (IsControlSending)
+        if (IsManualMode || IsControlSending)
         {
-            return;
-        }
-
-        if (Progress >= 100)
-        {
-            ResetGuidanceUi();
             return;
         }
 
@@ -184,7 +197,7 @@
 
     private async Task StartGuidanceAsync()
     {
-        if (SelectedDestination is null)
+        if (IsManualMode || SelectedDestination is null)
         {
             return;
         }
@@ -200,33 +213,12 @@
         }
 
         IsGuiding = true;
-        Progress = 0;
         ControlError = null;
-        StartJourneyTimer();
-    }
-
-    private void StartJourneyTimer()
-    {
-        journeyTimer?.Dispose();
-        journeyTimer = new Timer(_ => InvokeAsync(AdvanceJourney), null, TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(500));
-    }
-
-    private void AdvanceJourney()
-    {
-        // TODO(실제 연동): 서버가 제공하는 진행률로 화면을 갱신하면 이 테스트용 증가 로직은 제거합니다.
-        if (Progress >= 100)
-        {
-            journeyTimer?.Dispose();
-            return;
-        }
-
-        Progress = Math.Min(Progress + 2, 100);
-        StateHasChanged();
     }
 
     private async Task CancelGuidanceAsync()
     {
-        if (IsControlSending)
+        if (IsManualMode || IsControlSending)
         {
             return;
         }
@@ -247,17 +239,54 @@
 
     private void ResetGuidanceUi()
     {
-        journeyTimer?.Dispose();
-        journeyTimer = null;
         IsGuiding = false;
-        Progress = 0;
         SelectedDestination = null;
         IsGuidanceConfirmationOpen = false;
         CommandResult = null;
         ControlError = null;
     }
 
-    public void Dispose() => journeyTimer?.Dispose();
+    private async Task PollManualModeAsync(CancellationToken cancellationToken)
+    {
+        statusPollingTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+
+        try
+        {
+            while (await statusPollingTimer.WaitForNextTickAsync(cancellationToken))
+            {
+                await RefreshManualModeAsync(cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    private async Task RefreshManualModeAsync(CancellationToken cancellationToken)
+    {
+        var status = await RobotCommand.GetStatusAsync(cancellationToken);
+
+        if (!status.IsSuccess || status.ManualMode == IsManualMode)
+        {
+            return;
+        }
+
+        IsManualMode = status.ManualMode;
+
+        if (IsManualMode)
+        {
+            IsGuidanceConfirmationOpen = false;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        statusPollingCancellation.Cancel();
+        statusPollingTimer?.Dispose();
+        statusPollingCancellation.Dispose();
+    }
 
     private sealed record Destination(string Id, string Name, string Icon);
 }
